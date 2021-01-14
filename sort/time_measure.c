@@ -6,56 +6,12 @@
 #include "insertion.h"
 #include "bubble.h"
 #include "quick.h"
-#define LENGTH 1e4    // length of array for sort
+#define LENGTH 1e5    // length of array for sort
 #define MEASURE_C 1e3 // cnt of running sort for calc average
 
-void init_arrays(void);
-long *get_array(void);
-void set_array_random(long *);
-void print_array(long *);
-void chk_sort(long *);
-int compare_long(const void *, const void *);
 
-long int *array = NULL, *quick_ar = NULL, *qsort_ar = NULL,
-  *bubble_ar = NULL;
+long int *array = NULL, *qsort_ar = NULL, *quick_ar = NULL, *insert_ar = NULL, *bubble_ar = NULL;
 
-int main(void) {
-  // 配列を用意しセットする
-  init_arrays();
-
-  clock_t start_t, end_t;
-
-  start_t = clock();
-  quick(quick_ar, 0, LENGTH - 1);
-  end_t = clock();
-  printf("myquick time = %lf\n", (double)(end_t-start_t)/CLOCKS_PER_SEC);
-
-  start_t = clock();
-  qsort(qsort_ar, LENGTH, sizeof(long), compare_long);
-  end_t = clock();
-  printf("qsort time = %lf\n", (double)(end_t-start_t)/CLOCKS_PER_SEC);
-
-  free(array);
-  free(quick_ar);
-  free(qsort_ar);
-  return 0;
-}
-
-// 仮
-// 引数の関数をMERSURE_C回実行してその平均実行時間を返す
-double mersure_sort() {
-  return 0;
-}
-
-void init_arrays(void) {
-  if (array == NULL)  array = get_array();
-  if (quick_ar == NULL)  quick_ar = get_array();
-  if (qsort_ar == NULL)  qsort_ar = get_array();
-
-  set_array_random(array);
-  memcpy(quick_ar, array, sizeof(long) * LENGTH);
-  memcpy(qsort_ar, array, sizeof(long) * LENGTH);
-}
 
 // 配列を確保する
 // 確保に失敗したらエラーを出す
@@ -73,6 +29,21 @@ void set_array_random(long *array) {
   for (int i = 0; i < LENGTH; i++)
     array[i] = rand();
 }
+
+void init_arrays(void) {
+  if (array == NULL)  array = get_array();
+  if (quick_ar == NULL)  quick_ar = get_array();
+  if (bubble_ar == NULL)  bubble_ar = get_array();
+  if (insert_ar == NULL)  insert_ar = get_array();
+  if (qsort_ar == NULL)  qsort_ar = get_array();
+
+  set_array_random(array);
+  memcpy(quick_ar, array, sizeof(long) * LENGTH);
+  memcpy(bubble_ar, array, sizeof(long) * LENGTH);
+  memcpy(insert_ar, array, sizeof(long) * LENGTH);
+  memcpy(qsort_ar, array, sizeof(long) * LENGTH);
+}
+
 
 // 配列の中身をすべて表示する
 void print_array(long *a) {
@@ -105,3 +76,35 @@ int compare_long(const void *a, const void *b) {
   return 0;
 }
 
+// 仮
+// 引数の関数をMERSURE_C回実行してその平均実行時間を返す
+double measure_sort(void (*sortfn)(long [], long), long array[], char name[]) {
+  clock_t start_t, end_t;
+  
+  start_t = clock();
+  sortfn(array, (long)LENGTH);
+  end_t = clock();
+
+  printf("%s : time = %lf\n", name, (double)(end_t-start_t)/CLOCKS_PER_SEC);
+  return 0;
+}
+
+int main(void) {
+  // 配列を用意しセットする
+  init_arrays();
+
+  measure_sort(insertion, insert_ar, "insert_hehe");
+  measure_sort(bubble, bubble_ar, "bubble_hehe");
+  measure_sort(quick, insert_ar, "quick_hehe");
+
+  clock_t start_t, end_t;
+  start_t = clock();
+  qsort(qsort_ar, LENGTH, sizeof(long), compare_long);
+  end_t = clock();
+  printf("qsort time = %lf\n", (double)(end_t-start_t)/CLOCKS_PER_SEC);
+
+  free(array);
+  free(quick_ar);
+  free(qsort_ar);
+  return 0;
+}
