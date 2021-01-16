@@ -6,11 +6,12 @@
 #include "insertion.h"
 #include "bubble.h"
 #include "quick.h"
-#define LENGTH 1e5    // length of array for sort
-#define MEASURE_C 1e3 // cnt of running sort for calc average
+#include "heap.h"
+#define LENGTH 1e3    // length of array for sort
+#define MEASURE_C 1e6 // cnt of running sort for calc average
 
 
-long int *array = NULL, *qsort_ar = NULL, *quick_ar = NULL, *insert_ar = NULL, *bubble_ar = NULL;
+long int *array = NULL, *qsort_ar = NULL, *quick_ar = NULL, *insert_ar = NULL, *bubble_ar = NULL, *heap_ar = NULL;
 
 
 // 配列を確保する
@@ -32,15 +33,17 @@ void set_array_random(long *array) {
 
 void init_arrays(void) {
   if (array == NULL)  array = get_array();
-  if (quick_ar == NULL)  quick_ar = get_array();
   if (bubble_ar == NULL)  bubble_ar = get_array();
   if (insert_ar == NULL)  insert_ar = get_array();
+  if (quick_ar == NULL)  quick_ar = get_array();
+  if (heap_ar == NULL)  heap_ar = get_array();
   if (qsort_ar == NULL)  qsort_ar = get_array();
 
   set_array_random(array);
-  memcpy(quick_ar, array, sizeof(long) * LENGTH);
   memcpy(bubble_ar, array, sizeof(long) * LENGTH);
   memcpy(insert_ar, array, sizeof(long) * LENGTH);
+  memcpy(quick_ar, array, sizeof(long) * LENGTH);
+  memcpy(heap_ar, array, sizeof(long) * LENGTH);
   memcpy(qsort_ar, array, sizeof(long) * LENGTH);
 }
 
@@ -77,15 +80,19 @@ int compare_long(const void *a, const void *b) {
 }
 
 // 仮
-// 引数の関数をMERSURE_C回実行してその平均実行時間を返す
+// 引数の関数をMEASURE_C回実行してその平均実行時間を返す
 double measure_sort(void (*sortfn)(long [], long), long array[], char name[]) {
   clock_t start_t, end_t;
-  
-  start_t = clock();
-  sortfn(array, (long)LENGTH);
-  end_t = clock();
+  double sum = 0;
 
-  printf("%s : time = %lf\n", name, (double)(end_t-start_t)/CLOCKS_PER_SEC);
+  for (int i = 0; i < MEASURE_C; i++) {
+    start_t = clock();
+    sortfn(array, (long)LENGTH);
+    end_t = clock();
+    sum += (double)(end_t - start_t) / CLOCKS_PER_SEC;
+  }
+
+  printf("%s\t : time = %lf\n", name, sum / MEASURE_C);
   return 0;
 }
 
@@ -95,7 +102,8 @@ int main(void) {
 
   measure_sort(insertion, insert_ar, "insert_hehe");
   measure_sort(bubble, bubble_ar, "bubble_hehe");
-  measure_sort(quick, insert_ar, "quick_hehe");
+  measure_sort(quick, quick_ar, "quick_hehe");
+  measure_sort(heap, heap_ar, "heap_heheheh");
 
   clock_t start_t, end_t;
   start_t = clock();
